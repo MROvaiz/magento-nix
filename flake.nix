@@ -38,8 +38,15 @@
               lib,
               ...
             }: let
-              # theme for adminer using adminerevo
-              adminerevoTheme = pkgs.adminerevo.override {theme = "galkaev";};
+              adminerCSSFile = builtins.fetchurl {
+                url = "https://raw.githubusercontent.com/Niyko/Hydra-Dark-Theme-for-Adminer/master/adminer.css";
+                sha256 = "0hv43h7hbbkd1rmysl20is9hhw0xf1grasxyli2wnd0xv2gw87wi";
+              };
+              adminerTheme = pkgs.adminer.overrideAttrs (oldAttrs: {
+                postInstall = ''
+                  cp ${adminerCSSFile} $out/adminer.css
+                '';
+              });
             in {
               # packages
               packages = with pkgs; [
@@ -156,10 +163,11 @@
                         respond "Hello, world from dev.example.local!"
                       '';
                     };
-                    # AdminerEvo for database
+                    # Adminer with Theme for database
                     "dev.adminer.local" = {
                       extraConfig = ''
-                        root * ${adminerevoTheme}
+                        root * ${adminerTheme}
+                        try_files {path} adminer.php
                         php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
                         file_server
                         tls internal
