@@ -72,6 +72,7 @@
               hosts = {
                 "dev.example.local" = "127.0.0.1"; # testing hosts
                 "dev.adminer.local" = "127.0.0.1";
+                "dev.mailpit.local" = "127.0.0.1";
                 "dev.magento2.local" = "127.0.0.1";
               };
 
@@ -153,6 +154,7 @@
                 # caddy host
                 caddy = {
                   enable = true;
+                  # comment this! if everything is wrong fine.
                   ca = "https://acme-staging-v02.api.letsencrypt.org/directory";
                   # All Virtual Hosts
                   virtualHosts = {
@@ -170,6 +172,13 @@
                         try_files {path} adminer.php
                         php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
                         file_server
+                        tls internal
+                      '';
+                    };
+                    # Mailpit url
+                    "dev.mailpit.local" = {
+                      extraConfig = ''
+                        reverse_proxy ${config.services.mailpit.uiListenAddress}
                         tls internal
                       '';
                     };

@@ -60,6 +60,7 @@ hosts = {
 ```bash
 curl -k --resolve dev.magento2.local:443:127.0.0.1 https://dev.magento2.local
 ```
+- Make sure to comment Caddy acme-staging(CA), after everything is working fine.
 
 Note: Sometimes there is a problem with `/etc/hosts`. try deleting `.devenv/state/hostctl` once and `devenv up`, if `/etc/hosts` is not writing([sudo-permission](https://github.com/cachix/devenv/issues/940)).
 
@@ -104,13 +105,18 @@ php bin/magento setup:install \
 --page-cache-redis-db=2 
 ```
 
+### Access:
+- Magento url: `https://dev.magento2.local`
+- Adminer url: `https://dev.adminer.local`
+- Mailpit url: `https://dev.mailpit.local`
+
 ### Operations
 
-disable 2fa(for now):
+disable 2fa(not required, mailpit is working for 2FA):
 ```bash
 bin/magento module:disable Magento_TwoFactorAuth Magento_AdminAdobeImsTwoFactorAuth
 ```
-update https configs(for now):
+update https configs(not required, setup during installation):
 ```bash
 bin/magento config:set web/unsecure/base_url https://dev.magento2.local/ 
 bin/magento config:set web/secure/base_url https://dev.magento2.local/ 
