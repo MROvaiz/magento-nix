@@ -33,7 +33,14 @@
         default = devenv.lib.mkShell {
           inherit inputs pkgs;
           modules = [
-            ({config, ...}: {
+            ({
+              config,
+              lib,
+              ...
+            }: let
+              # theme for adminer using adminerevo
+              adminerevoTheme = pkgs.adminerevo.override {theme = "galkaev";};
+            in {
               # packages
               packages = with pkgs; [
                 git
@@ -57,6 +64,7 @@
               # /etc/hosts entry
               hosts = {
                 "dev.example.local" = "127.0.0.1"; # testing hosts
+                "dev.adminer.local" = "127.0.0.1";
                 "dev.magento2.local" = "127.0.0.1";
               };
 
@@ -69,6 +77,7 @@
                     enabled,
                   }:
                     with all; enabled ++ [xdebug xsl redis];
+                  # mysql Socket
                   extraConfig = ''
                     memory_limit = -1
                     display_errors = On
@@ -77,6 +86,7 @@
                     xdebug.mode = coverage,debug
                     opcache.memory_consumption = 256M
                     opcache.interned_strings_buffer = 20
+                    ${lib.optionalString config.services.mysql.enable "mysqli.default_socket=${config.env.MYSQL_UNIX_PORT}"}
                     sendmail_path = ${pkgs.mailpit}/bin/mailpit sendmail -S 127.0.0.1:1025
                   '';
                 };
@@ -99,8 +109,8 @@
                 # email setup
                 mailpit.enable = true;
 
-                # mysql monitor
-                adminer.enable = true;
+                # mysql monitor, Use Adminerevo in caddy
+                # adminer.enable = true;
 
                 # redis caches
                 redis.enable = true;
@@ -144,6 +154,15 @@
                       extraConfig = ''
                         tls internal
                         respond "Hello, world from dev.example.local!"
+                      '';
+                    };
+                    # AdminerEvo for database
+                    "dev.adminer.local" = {
+                      extraConfig = ''
+                        root * ${adminerevoTheme}
+                        php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
+                        file_server
+                        tls internal
                       '';
                     };
                     # main host
